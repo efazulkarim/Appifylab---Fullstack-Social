@@ -1,0 +1,190 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum NotificationType {
+  POST_LIKED
+  COMMENTED
+  COMMENT_LIKED
+  REPLIED
+  FOLLOWED
+}
+
+model User {
+  id                 String              @id @default(cuid())
+  email              String              @unique
+  firstName          String
+  lastName           String
+  passwordHash       String?
+  googleId           String?             @unique
+  avatarPath         String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  posts              Post[]
+  comments           Comment[]
+  postLikes          PostLike[]
+  commentLikes       CommentLike[]
+  refreshSessions    RefreshSession[]
+  following          Follow[]            @relation("following")
+  followers          Follow[]            @relation("followers")
+  ignoredSuggestions IgnoredSuggestion[] @relation("ignoredBy")
+  ignoredBy          IgnoredSuggestion[] @relation("ignoredUser")
+  stories            Story[]
+  notifications      Notification[]      @relation("recipient")
+  emitted            Notification[]      @relation("actor")
+
+  @@index([createdAt])
+}
+
+model RefreshSession {
+  id           String    @id @default(cuid())
+  userId       String
+  tokenHash    String    @unique
+  userAgent    String?
+  ipAddress    String?
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt, expiresAt])
+}
+
+model Post {
+  id           String     @id @default(cuid())
+  authorId     String
+  text         String
+  visibility   Visibility @default(PUBLIC)
+  imagePath    String?
+  imageMime    String?
+  imageSize    Int?
+  imageWidth   Int?
+  imageHeight  Int?
+  likeCount    Int        @default(0)
+  commentCount Int        @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  author       User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  likes        PostLike[]
+  comments     Comment[]
+
+  @@index([visibility, createdAt, id])
+  @@index([authorId, createdAt])
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId, createdAt])
+}
+
+model Comment {
+  id         String        @id @default(cuid())
+  postId     String
+  authorId   String
+  parentId   String?
+  text       String
+  likeCount  Int           @default(0)
+  replyCount Int           @default(0)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  post       Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author     User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent     Comment?      @relation("commentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies    Comment[]     @relation("commentReplies")
+  likes      CommentLike[]
+
+  @@index([postId, parentId, createdAt])
+  @@index([authorId, createdAt])
+}
+
+model CommentLike {
+  id        String   @id @default(cuid())
+  commentId String
+  userId    String
+  createdAt DateTime @default(now())
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@index([userId, createdAt])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("following", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followingId, createdAt])
+}
+
+model IgnoredSuggestion {
+  id            String   @id @default(cuid())
+  ignoredById   String
+  ignoredUserId String
+  createdAt     DateTime @default(now())
+  ignoredBy     User     @relation("ignoredBy", fields: [ignoredById], references: [id], onDelete: Cascade)
+  ignoredUser   User     @relation("ignoredUser", fields: [ignoredUserId], references: [id], onDelete: Cascade)
+
+  @@unique([ignoredById, ignoredUserId])
+}
+
+model Story {
+  id        String   @id @default(cuid())
+  authorId  String
+  imagePath String?
+  text      String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt, createdAt])
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startsAt    DateTime
+  imagePath   String?
+  createdAt   DateTime @default(now())
+
+  @@index([startsAt])
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  recipientId String
+  actorId     String?
+  type        NotificationType
+  text        String
+  postId      String?
+  commentId   String?
+  readAt      DateTime?
+  createdAt   DateTime         @default(now())
+  recipient   User             @relation("recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  actor       User?            @relation("actor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([recipientId, readAt, createdAt])
+}

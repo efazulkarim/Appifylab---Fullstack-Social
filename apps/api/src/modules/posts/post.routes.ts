@@ -1,0 +1,15 @@
+import { Router } from "express";
+import multer from "multer";
+import { cursorQuerySchema } from "@appifylab/shared";
+import { requireAuth } from "../../middleware/auth.js";
+import { validateQuery } from "../../middleware/validate.js";
+import * as postController from "./post.controller.js";
+
+const upload = multer({ storage: multer.memoryStorage() });
+export const postRouter = Router();
+
+postRouter.get("/feed", requireAuth, validateQuery(cursorQuerySchema), postController.getFeed);
+postRouter.post("/posts", requireAuth, upload.single("image"), postController.createPost);
+postRouter.put("/posts/:postId/like", requireAuth, postController.likePost);
+postRouter.delete("/posts/:postId/like", requireAuth, postController.unlikePost);
+postRouter.get("/posts/:postId/likes", requireAuth, postController.getPostLikes);
