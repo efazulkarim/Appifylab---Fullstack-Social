@@ -34,7 +34,7 @@ export async function createPost(req: Request, res: Response, next: NextFunction
 
 export async function likePost(req: Request, res: Response, next: NextFunction) {
   try {
-    const result = await postService.likePost(req.user!.id, req.user!.firstName, req.params.postId);
+    const result = await postService.likePost(req.user!.id, req.user!.firstName, String(req.params.postId));
     return ok(res, result);
   } catch (error) {
     return next(error);
@@ -43,7 +43,7 @@ export async function likePost(req: Request, res: Response, next: NextFunction) 
 
 export async function unlikePost(req: Request, res: Response, next: NextFunction) {
   try {
-    const result = await postService.unlikePost(req.user!.id, req.params.postId);
+    const result = await postService.unlikePost(req.user!.id, String(req.params.postId));
     return ok(res, result);
   } catch (error) {
     return next(error);
@@ -52,7 +52,7 @@ export async function unlikePost(req: Request, res: Response, next: NextFunction
 
 export async function getPostLikes(req: Request, res: Response, next: NextFunction) {
   try {
-    const users = await postService.getPostLikes(req.params.postId);
+    const users = await postService.getPostLikes(String(req.params.postId));
     return ok(res, users);
   } catch (error) {
     return next(error);

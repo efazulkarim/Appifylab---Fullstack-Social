@@ -25,7 +25,7 @@ export async function getSidebar(req: Request, res: Response, next: NextFunction
 
 export async function followUser(req: Request, res: Response, next: NextFunction) {
   try {
-    const result = await userService.followUser(req.user!.id, req.params.userId, req.user!.firstName);
+    const result = await userService.followUser(req.user!.id, String(req.params.userId), req.user!.firstName);
     return ok(res, result);
   } catch (error) {
     return next(error);
@@ -34,7 +34,7 @@ export async function followUser(req: Request, res: Response, next: NextFunction
 
 export async function unfollowUser(req: Request, res: Response, next: NextFunction) {
   try {
-    const result = await userService.unfollowUser(req.user!.id, req.params.userId);
+    const result = await userService.unfollowUser(req.user!.id, String(req.params.userId));
     return ok(res, result);
   } catch (error) {
     return next(error);
@@ -43,7 +43,7 @@ export async function unfollowUser(req: Request, res: Response, next: NextFuncti
 
 export async function ignoreUser(req: Request, res: Response, next: NextFunction) {
   try {
-    const result = await userService.ignoreUser(req.user!.id, req.params.userId);
+    const result = await userService.ignoreUser(req.user!.id, String(req.params.userId));
     return ok(res, result);
   } catch (error) {
     return next(error);
