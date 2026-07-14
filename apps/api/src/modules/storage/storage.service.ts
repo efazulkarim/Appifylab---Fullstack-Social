@@ -40,11 +40,32 @@ export async function uploadPostImage(file: Express.Multer.File | undefined, use
   };
 }
 
+interface CacheEntry {
+  signedUrl: string;
+  expiresAt: number;
+}
+
+const signedUrlCache = new Map<string, CacheEntry>();
+const CACHE_TTL_MS = 8 * 60 * 1000; // 8 minutes (expires in 10 minutes)
+
 export async function createSignedImageUrl(path: string | null | undefined) {
   if (!path) return null;
+  
+  const now = Date.now();
+  const cached = signedUrlCache.get(path);
+  if (cached && cached.expiresAt > now + 60000) {
+    return cached.signedUrl;
+  }
+
   const { data, error } = await supabase.storage
     .from(env.SUPABASE_STORAGE_BUCKET)
     .createSignedUrl(path, 60 * 10);
-  if (error) return null;
+  if (error || !data?.signedUrl) return null;
+
+  signedUrlCache.set(path, {
+    signedUrl: data.signedUrl,
+    expiresAt: now + CACHE_TTL_MS,
+  });
+
   return data.signedUrl;
 }
