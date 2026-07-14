@@ -9,6 +9,7 @@ RUN npm install
 FROM deps AS builder
 WORKDIR /app
 COPY . .
+ENV DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy
 RUN npm run prisma:generate
 RUN npm run build
 
