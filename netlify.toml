@@ -1,0 +1,20 @@
+# Netlify configuration for Appifylab Social Feed
+[build]
+  # Builds both the shared package dependency and the web application from the monorepo root
+  command = "npm run build --workspace @appifylab/shared --workspace @appifylab/web"
+  publish = "apps/web/dist"
+
+[[redirects]]
+  # Redirects /api/* requests to the backend VPS server.
+  # This makes API requests Same-Origin for the browser, solving CORS, CSRF, and 3rd-party cookie issues.
+  # REPLACE 'https://api.yourvpsdomain.com' with your actual VPS backend domain configured in Dokploy.
+  from = "/api/*"
+  to = "https://api.yourvpsdomain.com/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  # Handles client-side routing for Single Page Applications (React Router)
+  from = "/*"
+  to = "/index.html"
+  status = 200
