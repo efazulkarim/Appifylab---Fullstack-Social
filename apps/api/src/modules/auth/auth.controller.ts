@@ -14,9 +14,6 @@ import {
 
 export async function register(req: Request, res: Response, next: NextFunction) {
   try {
-    if (req.validationError) {
-      throw new HttpError(400, "VALIDATION_ERROR", "Invalid registration data.", req.validationError);
-    }
     const { user, tokens } = await registerUser(req.body, {
       userAgent: req.header("user-agent"),
       ipAddress: req.ip,
@@ -30,9 +27,6 @@ export async function register(req: Request, res: Response, next: NextFunction) 
 
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
-    if (req.validationError) {
-      throw new HttpError(400, "VALIDATION_ERROR", "Invalid login data.", req.validationError);
-    }
     const { user, tokens } = await loginUser(req.body, {
       userAgent: req.header("user-agent"),
       ipAddress: req.ip,

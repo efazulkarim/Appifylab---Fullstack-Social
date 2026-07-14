@@ -5,9 +5,6 @@ import * as postService from "./post.service.js";
 
 export async function getFeed(req: Request, res: Response, next: NextFunction) {
   try {
-    if (req.validationError) {
-      throw new HttpError(400, "VALIDATION_ERROR", "Invalid feed query.", req.validationError);
-    }
     const { cursor, limit } = req.query as unknown as { cursor?: string; limit: number };
     const { data, nextCursor } = await postService.getFeed(req.user!.id, cursor, limit);
     return ok(res, data, { nextCursor });

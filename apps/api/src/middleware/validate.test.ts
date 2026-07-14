@@ -15,7 +15,7 @@ describe("Validation Middlewares", () => {
         body: {
           email: "test@example.com",
           age: 20,
-          extraField: "ignored", // Schema validation should strip this if strict is not on, or Zod will parse it
+          extraField: "ignored",
         },
       } as unknown as Request;
       const res = {} as Response;
@@ -25,14 +25,14 @@ describe("Validation Middlewares", () => {
       middleware(req, res, next);
 
       expect(next).toHaveBeenCalledTimes(1);
-      expect(req.validationError).toBeUndefined();
+      expect(next).toHaveBeenCalledWith(); // called with no args = success
       expect(req.body).toEqual({
         email: "test@example.com",
         age: 20,
       });
     });
 
-    it("should call next() and set req.validationError on Zod error", () => {
+    it("should call next(HttpError) on Zod validation failure", () => {
       const req = {
         body: {
           email: "invalid-email",
@@ -46,9 +46,12 @@ describe("Validation Middlewares", () => {
       middleware(req, res, next);
 
       expect(next).toHaveBeenCalledTimes(1);
-      expect(req.validationError).toBeDefined();
-      expect(req.validationError?.fieldErrors.email).toContain("Invalid email address");
-      expect(req.validationError?.fieldErrors.age).toContain("Too small: expected number to be >=18");
+      const error = next.mock.calls[0][0];
+      expect(error).toBeDefined();
+      expect(error.statusCode).toBe(400);
+      expect(error.code).toBe("VALIDATION_ERROR");
+      expect(error.details?.fieldErrors?.email).toBeDefined();
+      expect(error.details?.fieldErrors?.age).toBeDefined();
     });
   });
 
@@ -57,7 +60,7 @@ describe("Validation Middlewares", () => {
       const req = {
         query: {
           email: "query@example.com",
-          age: "25", // Zod coerce can convert this if schema handles it, or we pass correct type
+          age: "25",
         },
       } as unknown as Request;
       
@@ -73,14 +76,14 @@ describe("Validation Middlewares", () => {
       middleware(req, res, next);
 
       expect(next).toHaveBeenCalledTimes(1);
-      expect(req.validationError).toBeUndefined();
+      expect(next).toHaveBeenCalledWith(); // called with no args = success
       expect(req.query).toEqual({
         email: "query@example.com",
         age: 25,
       });
     });
 
-    it("should call next() and set req.validationError on Zod error in query", () => {
+    it("should call next(HttpError) on Zod validation failure in query", () => {
       const req = {
         query: {
           email: "bad-email",
@@ -100,9 +103,12 @@ describe("Validation Middlewares", () => {
       middleware(req, res, next);
 
       expect(next).toHaveBeenCalledTimes(1);
-      expect(req.validationError).toBeDefined();
-      expect(req.validationError?.fieldErrors.email).toContain("Invalid email address");
-      expect(req.validationError?.fieldErrors.age).toContain("Too small: expected number to be >=18");
+      const error = next.mock.calls[0][0];
+      expect(error).toBeDefined();
+      expect(error.statusCode).toBe(400);
+      expect(error.code).toBe("VALIDATION_ERROR");
+      expect(error.details?.fieldErrors?.email).toBeDefined();
+      expect(error.details?.fieldErrors?.age).toBeDefined();
     });
   });
 });
