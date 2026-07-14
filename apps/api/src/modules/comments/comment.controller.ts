@@ -3,6 +3,18 @@ import { createCommentSchema } from "@appifylab/shared";
 import { HttpError, ok, created } from "../../lib/http.js";
 import * as commentService from "./comment.service.js";
 
+export async function getComments(req: Request, res: Response, next: NextFunction) {
+  try {
+    const comments = await commentService.getComments(
+      req.user!.id,
+      String(req.params.postId),
+    );
+    return ok(res, comments);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 export async function createComment(req: Request, res: Response, next: NextFunction) {
   try {
     const parsed = createCommentSchema.safeParse(req.body);

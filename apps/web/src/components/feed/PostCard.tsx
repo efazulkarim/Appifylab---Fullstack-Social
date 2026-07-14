@@ -5,7 +5,8 @@ import {
   useLikePostMutation, 
   useLikeCommentMutation, 
   useCreateCommentMutation, 
-  useCreateReplyMutation 
+  useCreateReplyMutation,
+  usePostComments
 } from "../../features/feed/feedQuery.ts";
 
 interface PostCardProps {
@@ -20,6 +21,8 @@ export default function PostCard({ post }: PostCardProps) {
   const handleLikeToggle = () => {
     likeMutation.mutate({ liked: !post.likedByMe });
   };
+
+  const { data: comments, isLoading: loadingComments } = usePostComments(post.id, showComments);
 
   const handleOpenLikesModal = () => {
     setActiveModal({
@@ -123,11 +126,19 @@ export default function PostCard({ post }: PostCardProps) {
       {showComments && (
         <div className="_feed_inner_timeline_cooment_area px-3 mt-3">
           <CommentBox postId={post.id} />
-          <div className="_timline_comment_main mt-2">
-            {post.comments.map((comment) => (
-              <CommentItem key={comment.id} comment={comment} />
-            ))}
-          </div>
+          {loadingComments ? (
+            <div className="text-center py-3">
+              <div className="spinner-border spinner-border-sm text-primary" role="status">
+                <span className="visually-hidden">Loading comments...</span>
+              </div>
+            </div>
+          ) : (
+            <div className="_timline_comment_main mt-2">
+              {(comments || []).map((comment) => (
+                <CommentItem key={comment.id} comment={comment} postId={post.id} />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -138,7 +149,7 @@ export default function PostCard({ post }: PostCardProps) {
 function CommentBox({ postId, parentId }: { postId: string; parentId?: string }) {
   const [text, setText] = useState("");
   const createCommentMutation = useCreateCommentMutation(postId);
-  const createReplyMutation = useCreateReplyMutation(parentId || "");
+  const createReplyMutation = useCreateReplyMutation(parentId || "", postId);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -190,10 +201,10 @@ function CommentBox({ postId, parentId }: { postId: string; parentId?: string })
 }
 
 /* Comment Item Component */
-function CommentItem({ comment }: { comment: CommentDto }) {
+function CommentItem({ comment, postId }: { comment: CommentDto; postId: string }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const { setActiveModal } = useUiStore();
-  const likeMutation = useLikeCommentMutation(comment.id);
+  const likeMutation = useLikeCommentMutation(comment.id, postId);
 
   const handleLikeToggle = () => {
     likeMutation.mutate({ liked: !comment.likedByMe });
@@ -261,7 +272,7 @@ function CommentItem({ comment }: { comment: CommentDto }) {
       {/* Reply input form */}
       {showReplyForm && (
         <div className="ms-5 mt-2">
-          <CommentBox postId="" parentId={comment.id} />
+          <CommentBox postId={postId} parentId={comment.id} />
         </div>
       )}
 
@@ -269,7 +280,7 @@ function CommentItem({ comment }: { comment: CommentDto }) {
       {comment.replies && comment.replies.length > 0 && (
         <div className="ms-5">
           {comment.replies.map((reply) => (
-            <CommentItem key={reply.id} comment={reply} />
+            <CommentItem key={reply.id} comment={reply} postId={postId} />
           ))}
         </div>
       )}

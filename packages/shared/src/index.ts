@@ -82,7 +82,7 @@ export type PostDto = {
   commentCount: number;
   likedByMe: boolean;
   createdAt: string;
-  comments: CommentDto[];
+  comments?: CommentDto[];
 };
 
 export type NotificationDto = {

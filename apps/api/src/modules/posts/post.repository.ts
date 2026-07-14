@@ -10,23 +10,6 @@ const safeUserSelect = { id: true, firstName: true, lastName: true, email: true,
 const postRelationsInclude = (currentUserId: string) => ({
   author: { select: safeUserSelect },
   likes: { where: { userId: currentUserId }, select: { userId: true } },
-  comments: {
-    where: { parentId: null },
-    orderBy: { createdAt: "asc" as const },
-    take: 3,
-    include: {
-      author: { select: safeUserSelect },
-      likes: { where: { userId: currentUserId }, select: { userId: true } },
-      replies: {
-        orderBy: { createdAt: "asc" as const },
-        take: 2,
-        include: {
-          author: { select: safeUserSelect },
-          likes: { where: { userId: currentUserId }, select: { userId: true } },
-        },
-      },
-    },
-  },
 });
 
 export async function findFeedPosts(

@@ -17,6 +17,7 @@ export const feedKeys = {
   feed: ["posts-feed"] as const,
   sidebar: ["sidebar-data"] as const,
   likes: (postId: string) => ["post-likes", postId] as const,
+  comments: (postId: string) => ["post-comments", postId] as const,
   commentLikes: (commentId: string) => ["comment-likes", commentId] as const,
   notifications: ["notifications-list"] as const,
 };
@@ -130,6 +131,18 @@ export function usePostLikes(postId: string, enabled: boolean) {
   });
 }
 
+// Post Comments Query
+export function usePostComments(postId: string, enabled: boolean) {
+  return useQuery<CommentDto[], Error>({
+    queryKey: feedKeys.comments(postId),
+    queryFn: async () => {
+      const res = await apiRequest<ApiEnvelope<CommentDto[]>>(`/api/posts/${postId}/comments`);
+      return res.data;
+    },
+    enabled,
+  });
+}
+
 // Create Comment mutation with optimistic update
 export function useCreateCommentMutation(postId: string) {
   const queryClient = useQueryClient();
@@ -142,12 +155,13 @@ export function useCreateCommentMutation(postId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: feedKeys.feed });
       queryClient.invalidateQueries({ queryKey: feedKeys.sidebar });
+      queryClient.invalidateQueries({ queryKey: feedKeys.comments(postId) });
     },
   });
 }
 
 // Create Reply mutation with optimistic update
-export function useCreateReplyMutation(commentId: string) {
+export function useCreateReplyMutation(commentId: string, postId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: CreateCommentInput) =>
@@ -158,12 +172,13 @@ export function useCreateReplyMutation(commentId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: feedKeys.feed });
       queryClient.invalidateQueries({ queryKey: feedKeys.sidebar });
+      queryClient.invalidateQueries({ queryKey: feedKeys.comments(postId) });
     },
   });
 }
 
 // Like/Unlike comment mutation with optimistic updates
-export function useLikeCommentMutation(commentId: string) {
+export function useLikeCommentMutation(commentId: string, postId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ liked }: { liked: boolean }) => {
@@ -171,8 +186,8 @@ export function useLikeCommentMutation(commentId: string) {
       return apiRequest<{ liked: boolean }>(`/api/comments/${commentId}/like`, { method });
     },
     onMutate: async ({ liked }) => {
-      await queryClient.cancelQueries({ queryKey: feedKeys.feed });
-      const previousFeed = queryClient.getQueryData(feedKeys.feed);
+      await queryClient.cancelQueries({ queryKey: feedKeys.comments(postId) });
+      const previousComments = queryClient.getQueryData(feedKeys.comments(postId));
 
       // Helper to update comment tree recursively
       const updateComments = (comments: CommentDto[]): CommentDto[] => {
@@ -195,29 +210,22 @@ export function useLikeCommentMutation(commentId: string) {
         });
       };
 
-      queryClient.setQueryData(feedKeys.feed, (old: any) => {
-        if (!old) return old;
-        return {
-          ...old,
-          pages: old.pages.map((page: any) => ({
-            ...page,
-            data: page.data.map((post: PostDto) => ({
-              ...post,
-              comments: updateComments(post.comments),
-            })),
-          })),
-        };
-      });
+      if (previousComments) {
+        queryClient.setQueryData(feedKeys.comments(postId), (old: CommentDto[] | undefined) => {
+          if (!old) return old;
+          return updateComments(old);
+        });
+      }
 
-      return { previousFeed };
+      return { previousComments };
     },
     onError: (_err, _newVal, context) => {
-      if (context?.previousFeed) {
-        queryClient.setQueryData(feedKeys.feed, context.previousFeed);
+      if (context?.previousComments) {
+        queryClient.setQueryData(feedKeys.comments(postId), context.previousComments);
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: feedKeys.feed });
+      queryClient.invalidateQueries({ queryKey: feedKeys.comments(postId) });
       queryClient.invalidateQueries({ queryKey: feedKeys.commentLikes(commentId) });
     },
   });

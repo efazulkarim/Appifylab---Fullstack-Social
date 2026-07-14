@@ -9,7 +9,15 @@ import {
   likeCommentInTransaction,
   unlikeCommentInTransaction,
   findCommentLikes,
+  findCommentsByPostId,
 } from "./comment.repository.js";
+
+export async function getComments(userId: string, postId: string) {
+  const post = await findPostByIdWithPrivacy(postId, userId);
+  if (!post) throw new HttpError(404, "POST_NOT_FOUND", "Post was not found.");
+  const comments = await findCommentsByPostId(postId, userId);
+  return comments.map((comment) => toCommentDto(comment, userId));
+}
 
 export async function createComment(
   userId: string,

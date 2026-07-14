@@ -18,6 +18,14 @@ const commentInclude = (userId: string) => ({
   },
 });
 
+export async function findCommentsByPostId(postId: string, userId: string) {
+  return prisma.comment.findMany({
+    where: { postId, parentId: null },
+    orderBy: { createdAt: "asc" },
+    include: commentInclude(userId),
+  });
+}
+
 export async function findPostByIdWithPrivacy(postId: string, userId: string) {
   return prisma.post.findFirst({
     where: { id: postId, OR: [{ visibility: "PUBLIC" }, { authorId: userId }] },

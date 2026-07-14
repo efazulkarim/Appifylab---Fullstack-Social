@@ -11,7 +11,7 @@ type CommentWithAuthor = Comment & {
 type PostWithRelations = Post & {
   author: UserShape;
   likes: { userId: string }[];
-  comments: CommentWithAuthor[];
+  comments?: CommentWithAuthor[];
 };
 
 export function toUserDto(user: UserShape): UserDto {
@@ -48,7 +48,7 @@ export async function toPostDto(post: PostWithRelations, currentUserId: string):
     commentCount: post.commentCount,
     likedByMe: post.likes.some((like) => like.userId === currentUserId),
     createdAt: post.createdAt.toISOString(),
-    comments: post.comments.map((comment) => toCommentDto(comment, currentUserId)),
+    comments: post.comments ? post.comments.map((comment) => toCommentDto(comment, currentUserId)) : undefined,
   };
 }
 
