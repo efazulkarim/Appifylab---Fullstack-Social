@@ -20,7 +20,12 @@ export function validateQuery<T>(schema: ZodSchema<T>) {
       req.validationError = parsed.error.flatten();
       return next();
     }
-    req.query = parsed.data as Request["query"];
+    Object.defineProperty(req, "query", {
+      value: parsed.data,
+      writable: true,
+      configurable: true,
+      enumerable: true,
+    });
     return next();
   };
 }

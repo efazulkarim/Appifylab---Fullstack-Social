@@ -122,7 +122,10 @@ export function useLikePostMutation(postId: string) {
 export function usePostLikes(postId: string, enabled: boolean) {
   return useQuery<UserDto[], Error>({
     queryKey: feedKeys.likes(postId),
-    queryFn: () => apiRequest<UserDto[]>(`/api/posts/${postId}/likes`),
+    queryFn: async () => {
+      const res = await apiRequest<ApiEnvelope<UserDto[]>>(`/api/posts/${postId}/likes`);
+      return res.data;
+    },
     enabled,
   });
 }
@@ -224,7 +227,10 @@ export function useLikeCommentMutation(commentId: string) {
 export function useCommentLikes(commentId: string, enabled: boolean) {
   return useQuery<UserDto[], Error>({
     queryKey: feedKeys.commentLikes(commentId),
-    queryFn: () => apiRequest<UserDto[]>(`/api/comments/${commentId}/likes`),
+    queryFn: async () => {
+      const res = await apiRequest<ApiEnvelope<UserDto[]>>(`/api/comments/${commentId}/likes`);
+      return res.data;
+    },
     enabled,
   });
 }
@@ -271,7 +277,10 @@ export function useMarkNotificationsReadMutation() {
 export function useSearchUsers(query: string) {
   return useQuery<UserDto[], Error>({
     queryKey: ["search-users", query],
-    queryFn: () => apiRequest<UserDto[]>(`/api/search?q=${encodeURIComponent(query)}`),
+    queryFn: async () => {
+      const res = await apiRequest<ApiEnvelope<UserDto[]>>(`/api/search?q=${encodeURIComponent(query)}`);
+      return res.data;
+    },
     enabled: query.trim().length >= 1,
   });
 }
