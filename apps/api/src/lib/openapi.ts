@@ -1,3 +1,7 @@
+import { env } from "./env.js";
+
+const cleanApiUrl = env.API_URL.replace(/\/api\/?$/, "");
+
 export const openApiSpec = {
   openapi: "3.0.0",
   info: {
@@ -7,8 +11,8 @@ export const openApiSpec = {
   },
   servers: [
     {
-      url: "http://localhost:8080",
-      description: "Local development server",
+      url: cleanApiUrl,
+      description: "Active API server",
     },
   ],
   security: [

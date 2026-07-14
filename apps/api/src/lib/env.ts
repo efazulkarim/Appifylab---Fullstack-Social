@@ -46,6 +46,7 @@ const envSchema = z.object({
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
   MEILISEARCH_HOST: z.string().url().optional(),
   MEILISEARCH_API_KEY: z.string().optional(),
+  API_URL: z.string().default("http://localhost:8080"),
 });
 
 export const env = envSchema.parse(process.env);
