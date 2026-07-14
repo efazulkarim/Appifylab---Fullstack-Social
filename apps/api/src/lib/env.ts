@@ -44,6 +44,8 @@ const envSchema = z.object({
   GOOGLE_CALLBACK_URL: z.string().url().optional(),
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+  MEILISEARCH_HOST: z.string().url().optional(),
+  MEILISEARCH_API_KEY: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);

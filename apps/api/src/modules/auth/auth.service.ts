@@ -2,6 +2,7 @@ import argon2 from "argon2";
 import type { RegisterInput, LoginInput } from "@appifylab/shared";
 import { env } from "../../lib/env.js";
 import { HttpError } from "../../lib/http.js";
+import { indexUser } from "../../lib/search.js";
 import {
   hashToken,
   signAccessToken,
@@ -50,6 +51,9 @@ export async function registerUser(input: RegisterInput, meta: SessionMeta) {
     email: input.email,
     passwordHash: await argon2.hash(input.password),
   });
+  
+  indexUser({ id: user.id, firstName: user.firstName, lastName: user.lastName, email: user.email }).catch(() => {});
+  
   const tokens = await createSession(user.id, meta);
   return { user, tokens };
 }
@@ -115,6 +119,9 @@ export async function handleGoogleCallback(code: string, meta: SessionMeta) {
     lastName: profile.family_name || "User",
     avatarPath: profile.picture,
   });
+  
+  indexUser({ id: user.id, firstName: user.firstName, lastName: user.lastName, email: user.email }).catch(() => {});
+  
   const tokens = await createSession(user.id, meta);
   return { user, tokens };
 }

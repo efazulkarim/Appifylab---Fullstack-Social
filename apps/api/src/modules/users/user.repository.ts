@@ -15,6 +15,17 @@ export async function searchUsers(excludeId: string, query: string, limit: numbe
   });
 }
 
+export async function findUsersByIds(userIds: string[]) {
+  const users = await prisma.user.findMany({
+    where: { id: { in: userIds } },
+  });
+  
+  const userMap = new Map(users.map((user) => [user.id, user]));
+  return userIds
+    .map((id) => userMap.get(id))
+    .filter((user): user is NonNullable<typeof user> => !!user);
+}
+
 export async function findSuggestions(userId: string, limit: number = 5) {
   return prisma.user.findMany({
     where: {

@@ -1,7 +1,9 @@
 import { toUserDto } from "../../lib/mappers.js";
 import { prisma } from "../../lib/prisma.js";
+import { searchUsersInIndex } from "../../lib/search.js";
 import {
   searchUsers as searchUsersRepo,
+  findUsersByIds,
   findSuggestions,
   findFriends,
   findActiveStories,
@@ -13,6 +15,13 @@ import {
 } from "./user.repository.js";
 
 export async function searchUsers(userId: string, query: string) {
+  const meiliUserIds = await searchUsersInIndex(query, 10);
+  if (meiliUserIds !== null) {
+    const filteredIds = meiliUserIds.filter((id) => id !== userId);
+    const users = await findUsersByIds(filteredIds);
+    return users.map(toUserDto);
+  }
+  
   const users = await searchUsersRepo(userId, query);
   return users.map(toUserDto);
 }
