@@ -3,13 +3,16 @@ import { prisma } from "../../lib/prisma.js";
 
 type TxClient = Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">;
 
+/** Only select fields safe for public exposure — never includes passwordHash or googleId */
+const safeUserSelect = { id: true, firstName: true, lastName: true, email: true, avatarPath: true } as const;
+
 const commentInclude = (userId: string) => ({
-  author: true as const,
+  author: { select: safeUserSelect },
   likes: { where: { userId }, select: { userId: true } },
   replies: {
     orderBy: { createdAt: "asc" as const },
     include: {
-      author: true as const,
+      author: { select: safeUserSelect },
       likes: { where: { userId }, select: { userId: true } },
     },
   },
@@ -75,7 +78,7 @@ export async function findCommentLikes(commentId: string, limit: number = 50) {
   return prisma.commentLike.findMany({
     where: { commentId },
     orderBy: { createdAt: "desc" },
-    include: { user: true },
+    include: { user: { select: safeUserSelect } },
     take: limit,
   });
 }

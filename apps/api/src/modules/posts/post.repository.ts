@@ -4,21 +4,24 @@ import { prisma } from "../../lib/prisma.js";
 
 type TxClient = Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">;
 
+/** Only select fields safe for public exposure — never includes passwordHash or googleId */
+const safeUserSelect = { id: true, firstName: true, lastName: true, email: true, avatarPath: true } as const;
+
 const postRelationsInclude = (currentUserId: string) => ({
-  author: true as const,
+  author: { select: safeUserSelect },
   likes: { where: { userId: currentUserId }, select: { userId: true } },
   comments: {
     where: { parentId: null },
     orderBy: { createdAt: "asc" as const },
     take: 3,
     include: {
-      author: true as const,
+      author: { select: safeUserSelect },
       likes: { where: { userId: currentUserId }, select: { userId: true } },
       replies: {
         orderBy: { createdAt: "asc" as const },
         take: 2,
         include: {
-          author: true as const,
+          author: { select: safeUserSelect },
           likes: { where: { userId: currentUserId }, select: { userId: true } },
         },
       },
@@ -45,7 +48,7 @@ export async function findFeedPosts(
 export async function findPostByIdWithPrivacy(postId: string, userId: string) {
   return prisma.post.findFirst({
     where: { id: postId, OR: [{ visibility: "PUBLIC" }, { authorId: userId }] },
-    include: { author: true },
+    include: { author: { select: safeUserSelect } },
   });
 }
 
@@ -98,7 +101,7 @@ export async function findPostLikes(postId: string, limit: number = 50) {
   return prisma.postLike.findMany({
     where: { postId },
     orderBy: { createdAt: "desc" },
-    include: { user: true },
+    include: { user: { select: safeUserSelect } },
     take: limit,
   });
 }

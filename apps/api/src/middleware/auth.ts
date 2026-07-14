@@ -8,7 +8,10 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
     const token = req.cookies?.access_token;
     if (!token) throw new HttpError(401, "UNAUTHENTICATED", "Please log in.");
     const payload = verifyAccessToken(token);
-    const user = await prisma.user.findUnique({ where: { id: payload.sub } });
+    const user = await prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: { id: true, firstName: true, lastName: true, email: true, avatarPath: true, createdAt: true, updatedAt: true },
+    });
     if (!user) throw new HttpError(401, "UNAUTHENTICATED", "Please log in.");
     req.user = user;
     next();
