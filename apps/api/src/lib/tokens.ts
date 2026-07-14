@@ -48,7 +48,7 @@ export function clearAuthCookies(res: Response) {
 
 export function csrfCookieOptions() {
   return {
-    httpOnly: false,
+    httpOnly: true,
     secure: isProduction,
     sameSite: "lax" as const,
     path: "/",
