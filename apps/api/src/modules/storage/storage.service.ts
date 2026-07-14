@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { nanoid } from "nanoid";
 import { env } from "../../lib/env.js";
 import { HttpError } from "../../lib/http.js";
+import { cache } from "../../lib/redis.js";
 
 const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
@@ -40,21 +41,15 @@ export async function uploadPostImage(file: Express.Multer.File | undefined, use
   };
 }
 
-interface CacheEntry {
-  signedUrl: string;
-  expiresAt: number;
-}
-
-const signedUrlCache = new Map<string, CacheEntry>();
-const CACHE_TTL_MS = 8 * 60 * 1000; // 8 minutes (expires in 10 minutes)
+const CACHE_TTL_SEC = 8 * 60; // 8 minutes (expires in 10 minutes)
 
 export async function createSignedImageUrl(path: string | null | undefined) {
   if (!path) return null;
   
-  const now = Date.now();
-  const cached = signedUrlCache.get(path);
-  if (cached && cached.expiresAt > now + 60000) {
-    return cached.signedUrl;
+  const cacheKey = `signed-url:${path}`;
+  const cachedUrl = await cache.get(cacheKey);
+  if (cachedUrl) {
+    return cachedUrl;
   }
 
   const { data, error } = await supabase.storage
@@ -62,10 +57,7 @@ export async function createSignedImageUrl(path: string | null | undefined) {
     .createSignedUrl(path, 60 * 10);
   if (error || !data?.signedUrl) return null;
 
-  signedUrlCache.set(path, {
-    signedUrl: data.signedUrl,
-    expiresAt: now + CACHE_TTL_MS,
-  });
+  await cache.set(cacheKey, data.signedUrl, CACHE_TTL_SEC);
 
   return data.signedUrl;
 }

@@ -28,6 +28,18 @@ export async function findFeedPosts(
   });
 }
 
+export async function findPostsByIds(postIds: string[], userId: string) {
+  const posts = await prisma.post.findMany({
+    where: { id: { in: postIds } },
+    include: postRelationsInclude(userId),
+  });
+  
+  const postMap = new Map(posts.map((post) => [post.id, post]));
+  return postIds
+    .map((id) => postMap.get(id))
+    .filter((post): post is NonNullable<typeof post> => !!post);
+}
+
 export async function findPostByIdWithPrivacy(postId: string, userId: string) {
   return prisma.post.findFirst({
     where: { id: postId, OR: [{ visibility: "PUBLIC" }, { authorId: userId }] },
