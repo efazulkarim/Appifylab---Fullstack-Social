@@ -18,7 +18,8 @@
     "prisma:generate": "npm --workspace apps/api run prisma:generate",
     "prisma:migrate": "npm --workspace apps/api run prisma:migrate",
     "start": "npm --workspace apps/api run start",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "doctor": "npx react-doctor@latest"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",

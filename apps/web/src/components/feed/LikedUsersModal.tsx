@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useUiStore } from "../../store/uiStore.ts";
 import { usePostLikes, useCommentLikes } from "../../features/feed/feedQuery.ts";
 
@@ -21,22 +22,41 @@ export default function LikedUsersModal() {
     isLikedUsersModal && isCommentOrReply
   );
 
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    if (isLikedUsersModal) {
+      dialogRef.current?.showModal();
+    }
+  }, [isLikedUsersModal]);
+
   if (!isLikedUsersModal) return null;
 
   const likes = isPost ? postLikes : commentLikes;
   const isLoading = isPost ? loadingPostLikes : loadingCommentLikes;
 
   return (
-    <div 
+    <dialog 
+      ref={dialogRef}
+      onClose={() => setActiveModal(null)}
       className="modal fade show d-block" 
-      tabIndex={-1} 
-      role="dialog"
-      style={{ backgroundColor: "rgba(0, 0, 0, 0.5)", zIndex: 1050 }}
+      style={{ 
+        backgroundColor: "rgba(0, 0, 0, 0.5)", 
+        zIndex: 1050,
+        border: "none",
+        width: "100%",
+        height: "100%",
+        maxWidth: "100%",
+        maxHeight: "100%",
+        margin: 0,
+        padding: 0
+      }}
+      aria-labelledby="liked-users-title"
     >
       <div className="modal-dialog modal-dialog-centered" role="document">
         <div className="modal-content dark:bg-zinc-900 dark:text-white border-0 shadow">
           <div className="modal-header d-flex justify-content-between align-items-center border-bottom-0 pb-0">
-            <h5 className="modal-title fw-bold">Liked By</h5>
+            <h5 id="liked-users-title" className="modal-title fw-bold">Liked By</h5>
             <button 
               type="button" 
               className="btn-close dark:btn-close-white" 
@@ -76,6 +96,7 @@ export default function LikedUsersModal() {
           </div>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }
+
