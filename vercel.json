@@ -4,7 +4,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://api.yourvpsdomain.com/api/:path*"
+      "destination": "https://social-api.efazulkarim.me/api/:path*"
     },
     {
       "source": "/:path*",
