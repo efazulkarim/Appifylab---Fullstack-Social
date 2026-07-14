@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import cookieParser from "cookie-parser";
@@ -56,8 +57,13 @@ app.get("/api/health", (_req, res) => res.json({ data: { status: "ok" } }));
 
 if (isProduction) {
   const webDist = path.resolve(__dirname, "../../web/dist");
-  app.use(express.static(webDist));
-  app.get("*", (_req, res) => res.sendFile(path.join(webDist, "index.html")));
+  if (fs.existsSync(webDist)) {
+    app.use(express.static(webDist));
+    app.get("*", (_req, res) => res.sendFile(path.join(webDist, "index.html")));
+  } else {
+    // If running in standalone API mode (e.g. frontend on Netlify)
+    app.get("/", (_req, res) => res.json({ message: "API Server running" }));
+  }
 }
 
 const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
