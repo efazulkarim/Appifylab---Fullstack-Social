@@ -20,7 +20,19 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const app = express();
 
 app.set("trust proxy", 1);
-app.use(helmet({ contentSecurityPolicy: false }));
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        "img-src": ["'self'", "data:", "blob:", env.SUPABASE_URL],
+        "font-src": ["'self'", "https://fonts.gstatic.com", "data:"],
+        "connect-src": ["'self'", env.SUPABASE_URL],
+      },
+    },
+  })
+);
 app.use(morgan(isProduction ? "combined" : "dev"));
 app.use(
   cors({
