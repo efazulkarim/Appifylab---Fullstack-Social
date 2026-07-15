@@ -75,7 +75,10 @@ export async function unlikeComment(req: Request, res: Response, next: NextFunct
 
 export async function getCommentLikes(req: Request, res: Response, next: NextFunction) {
   try {
-    const users = await commentService.getCommentLikes(String(req.params.commentId));
+    const users = await commentService.getCommentLikes(
+      String(req.params.commentId),
+      req.user!.id,
+    );
     return ok(res, users);
   } catch (error) {
     return next(error);

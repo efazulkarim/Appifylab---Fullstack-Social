@@ -113,7 +113,9 @@ export async function unlikePost(userId: string, postId: string) {
   return { liked: false };
 }
 
-export async function getPostLikes(postId: string) {
+export async function getPostLikes(postId: string, userId: string) {
+  const post = await findPostByIdWithPrivacy(postId, userId);
+  if (!post) throw new HttpError(404, "POST_NOT_FOUND", "Post was not found.");
   const likes = await findPostLikes(postId);
   return likes.map((like) => toUserDto(like.user));
 }

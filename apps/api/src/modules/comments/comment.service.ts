@@ -52,6 +52,10 @@ export async function createReply(
   if (!parent || parent.parentId) {
     throw new HttpError(404, "COMMENT_NOT_FOUND", "Comment was not found.");
   }
+  const post = await findPostByIdWithPrivacy(parent.postId, userId);
+  if (!post) {
+    throw new HttpError(404, "POST_NOT_FOUND", "Post was not found.");
+  }
   const reply = await createCommentInTransaction(
     { postId: parent.postId, parentId: parent.id, authorId: userId, text: input.text },
     userId,
@@ -70,6 +74,10 @@ export async function createReply(
 export async function likeComment(userId: string, userName: string, commentId: string) {
   const comment = await findCommentById(commentId);
   if (!comment) throw new HttpError(404, "COMMENT_NOT_FOUND", "Comment was not found.");
+  const post = await findPostByIdWithPrivacy(comment.postId, userId);
+  if (!post) {
+    throw new HttpError(404, "POST_NOT_FOUND", "Post was not found.");
+  }
   await likeCommentInTransaction(commentId, userId);
   await notify({
     recipientId: comment.authorId,
@@ -83,11 +91,23 @@ export async function likeComment(userId: string, userName: string, commentId: s
 }
 
 export async function unlikeComment(userId: string, commentId: string) {
+  const comment = await findCommentById(commentId);
+  if (!comment) throw new HttpError(404, "COMMENT_NOT_FOUND", "Comment was not found.");
+  const post = await findPostByIdWithPrivacy(comment.postId, userId);
+  if (!post) {
+    throw new HttpError(404, "POST_NOT_FOUND", "Post was not found.");
+  }
   await unlikeCommentInTransaction(commentId, userId);
   return { liked: false };
 }
 
-export async function getCommentLikes(commentId: string) {
+export async function getCommentLikes(commentId: string, userId: string) {
+  const comment = await findCommentById(commentId);
+  if (!comment) throw new HttpError(404, "COMMENT_NOT_FOUND", "Comment was not found.");
+  const post = await findPostByIdWithPrivacy(comment.postId, userId);
+  if (!post) {
+    throw new HttpError(404, "POST_NOT_FOUND", "Post was not found.");
+  }
   const likes = await findCommentLikes(commentId);
   return likes.map((like) => toUserDto(like.user));
 }

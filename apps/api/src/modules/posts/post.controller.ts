@@ -49,7 +49,10 @@ export async function unlikePost(req: Request, res: Response, next: NextFunction
 
 export async function getPostLikes(req: Request, res: Response, next: NextFunction) {
   try {
-    const users = await postService.getPostLikes(String(req.params.postId));
+    const users = await postService.getPostLikes(
+      String(req.params.postId),
+      req.user!.id,
+    );
     return ok(res, users);
   } catch (error) {
     return next(error);
