@@ -45,21 +45,7 @@ export default function Input({
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            style={{
-              position: "absolute",
-              right: "12px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: "4px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#6c757d",
-              zIndex: 10,
-            }}
+            className="_password_toggle_btn"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? (

@@ -39,18 +39,7 @@ export default function LikedUsersModal() {
     <dialog 
       ref={dialogRef}
       onClose={() => setActiveModal(null)}
-      className="modal fade show d-block" 
-      style={{ 
-        backgroundColor: "rgba(0, 0, 0, 0.5)", 
-        zIndex: 1050,
-        border: "none",
-        width: "100%",
-        height: "100%",
-        maxWidth: "100%",
-        maxHeight: "100%",
-        margin: 0,
-        padding: 0
-      }}
+      className="modal fade show d-block _modal_backdrop_dialog" 
       aria-labelledby="liked-users-title"
     >
       <div className="modal-dialog modal-dialog-centered" role="document">

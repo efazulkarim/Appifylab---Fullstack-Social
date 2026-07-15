@@ -91,8 +91,9 @@ export default function PostCard({ post }: PostCardProps) {
 
       {/* Post Reacts Info */}
       <div className="_feed_inner_timeline_total_reacts _padd_r24 _padd_l24 _mar_b26 mt-3 d-flex justify-content-between align-items-center">
-        <div 
-          className="_feed_inner_timeline_total_reacts_image d-flex align-items-center cursor-pointer"
+        <button 
+          type="button"
+          className="_feed_inner_timeline_total_reacts_image d-flex align-items-center cursor-pointer border-0 bg-transparent p-0 text-start"
           onClick={handleOpenLikesModal}
         >
           <img src="/assets/images/react_img1.png" alt="Like" className="_react_img1" />
@@ -100,15 +101,16 @@ export default function PostCard({ post }: PostCardProps) {
           <p className="_feed_inner_timeline_total_reacts_para mb-0 ms-1 fw-semibold fs-7">
             {post.likeCount} Likes
           </p>
-        </div>
-        <div 
-          className="_feed_inner_timeline_total_reacts_txt d-flex gap-2 cursor-pointer"
+        </button>
+        <button 
+          type="button"
+          className="_feed_inner_timeline_total_reacts_txt d-flex gap-2 cursor-pointer border-0 bg-transparent p-0 text-start"
           onClick={() => setShowComments(!showComments)}
         >
           <p className="_feed_inner_timeline_total_reacts_para1 mb-0 fs-7">
             <span>{post.commentCount}</span> Comments
           </p>
-        </div>
+        </button>
       </div>
 
       {/* Post Action Buttons */}
@@ -265,24 +267,35 @@ function CommentItem({ comment, postId }: { comment: CommentDto; postId: string 
             
             <div className="d-flex align-items-center justify-content-between fs-8">
               <div className="d-flex gap-3 text-secondary fw-semibold">
-                <span className={`cursor-pointer ${comment.likedByMe ? "text-primary" : ""}`} onClick={handleLikeToggle}>
+                <button 
+                  type="button"
+                  className={`border-0 bg-transparent p-0 cursor-pointer text-secondary fw-semibold ${comment.likedByMe ? "text-primary" : ""}`}
+                  onClick={handleLikeToggle}
+                  style={{ fontSize: "inherit" }}
+                >
                   Like
-                </span>
+                </button>
                 {!comment.parentId && (
-                  <span className="cursor-pointer" onClick={() => setShowReplyForm(!showReplyForm)}>
+                  <button 
+                    type="button"
+                    className="border-0 bg-transparent p-0 cursor-pointer text-secondary fw-semibold"
+                    onClick={() => setShowReplyForm(!showReplyForm)}
+                    style={{ fontSize: "inherit" }}
+                  >
                     Reply
-                  </span>
+                  </button>
                 )}
                 <span className="text-muted">{new Date(comment.createdAt).toLocaleDateString()}</span>
               </div>
               
-              <div 
-                className="_total_reactions d-flex align-items-center text-muted cursor-pointer fs-8"
+              <button 
+                type="button"
+                className="_total_reactions d-flex align-items-center text-muted cursor-pointer fs-8 border-0 bg-transparent p-0"
                 onClick={handleOpenLikesModal}
               >
                 <span className="me-1">{comment.likeCount}</span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-thumbs-up text-primary"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
-              </div>
+              </button>
             </div>
           </div>
         </div>
