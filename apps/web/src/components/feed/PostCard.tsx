@@ -50,8 +50,27 @@ export default function PostCard({ post }: PostCardProps) {
               <h4 className="_feed_inner_timeline_post_box_title mb-0 fs-6 fw-bold">
                 {post.author.firstName} {post.author.lastName}
               </h4>
-              <p className="_feed_inner_timeline_post_box_para text-muted mb-0 fs-7">
-                {new Date(post.createdAt).toLocaleDateString()} . <span className="badge bg-secondary-subtle text-secondary">{post.visibility}</span>
+              <p className="_feed_inner_timeline_post_box_para text-muted mb-0 fs-7 d-flex align-items-center">
+                <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                <span className="mx-1">•</span>
+                {post.visibility === "PUBLIC" ? (
+                  <span className="d-inline-flex align-items-center text-muted" title="Public - Visible to everyone">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className="me-1">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="2" y1="12" x2="22" y2="12"/>
+                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                    Public
+                  </span>
+                ) : (
+                  <span className="d-inline-flex align-items-center text-warning" title="Private - Visible only to you">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" className="me-1">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Private
+                  </span>
+                )}
               </p>
             </div>
           </div>
@@ -115,7 +134,7 @@ export default function PostCard({ post }: PostCardProps) {
           <span className="_feed_inner_timeline_reaction_link d-flex align-items-center justify-content-center gap-1 fs-7">
             <svg className="_reaction_svg" xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="none" viewBox="0 0 21 21">
               <path stroke="#000" d="M1 10.5c0-.464 0-.696.009-.893A9 9 0 019.607 1.01C9.804 1 10.036 1 10.5 1v0c.464 0 .696 0 .893.009a9 9 0 018.598 8.598c.009.197.009.429.009.893v6.046c0 1.36 0 2.041-.317 2.535a2 2 0 01-.602.602c-.494.317-1.174.317-2.535.317H10.5c-.464 0-.696 0-.893-.009a9 9 0 01-8.598-8.598C1 11.196 1 10.964 1 10.5v0z"/>
-              <path stroke="#000" stroke-linecap="round" stroke-linejoin="round" d="M6.938 9.313h7.125M10.5 14.063h3.563"/>
+              <path stroke="#000" strokeLinecap="round" strokeLinejoin="round" d="M6.938 9.313h7.125M10.5 14.063h3.563"/>
             </svg>
             Comment
           </span>
