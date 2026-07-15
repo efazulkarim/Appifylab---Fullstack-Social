@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import type { PostDto } from "@appifylab/shared";
 import { useUiStore } from "../../store/uiStore.ts";
 import { useLikePostMutation, usePostComments } from "../../features/feed/feedQuery.ts";

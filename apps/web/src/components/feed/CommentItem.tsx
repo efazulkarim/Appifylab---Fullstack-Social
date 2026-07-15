@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import type { CommentDto } from "@appifylab/shared";
 import { useUiStore } from "../../store/uiStore.ts";
 import { useLikeCommentMutation } from "../../features/feed/feedQuery.ts";
